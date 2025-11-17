@@ -23,8 +23,11 @@ jobs:
 
       - name: Build Grafana for 32-bit Linux
         run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-multilib libc6-dev-i386
           export GOARCH=386
           export GOOS=linux
+          export CGO_ENABLED=1
           go build -o grafana-6.7.6-linux-386 ./pkg/cmd/grafana-server
 
       - name: Upload artifact
