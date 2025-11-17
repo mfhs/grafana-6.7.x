@@ -1,0 +1,50 @@
+name: Build Grafana 32-bit
+
+on:
+  push:
+    tags:
+      - 'v*'   # run when we push a tag like v6.7.6
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.17'   # Grafana 6.7.x requires Go 1.17
+
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y gcc-multilib
+
+      - name: Build Grafana for 32-bit Linux
+        run: |
+          export GOARCH=386
+          export GOOS=linux
+          go build -o grafana-6.7.6-linux-386 ./pkg/cmd/grafana-server
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: grafana-386
+          path: grafana-6.7.6-linux-386
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: grafana-386
+
+      - name: Publish Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: grafana-6.7.6-linux-386
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
