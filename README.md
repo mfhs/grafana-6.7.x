@@ -1,3 +1,12 @@
+# Grafana 6.7.6 (32-bit Linux Build)
+
+> ⚠️ Note: The official Grafana project does not provide 32-bit Linux builds.  
+> This repository imports the Grafana 6.7.x source code and adds a GitHub Actions workflow. The purpose of this is to provide a community build for legacy 32‑bit systems (32-bit Linux binary).
+
+[![Build Status](https://github.com/mfhs/grafana-6.7.x/actions/workflows/build-386.yml/badge.svg)](https://github.com/mfhs/grafana-6.7.x/actions/workflows/build-386.yml)
+[![Release](https://img.shields.io/github/v/release/mfhs/grafana-6.7.x?label=Download%20Release)](https://github.com/mfhs/grafana-6.7.x/releases/tag/v6.7.6)
+
+
 ![Grafana](docs/logo-horizontal.png)
 
 The open-source platform for monitoring and observability.
