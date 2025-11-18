@@ -1,4 +1,4 @@
-name: Build Grafana 32-bit
+name: Build Grafana 6.7.6 (linux-386 static)
 
 on:
   push:
@@ -18,23 +18,47 @@ jobs:
         with:
           go-version: '1.17'   # Grafana 6.7.x requires Go 1.17
 
-      - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y gcc-multilib
-
-      - name: Build Grafana for 32-bit Linux
+      - name: Install build dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y gcc-multilib libc6-dev-i386
+
+      - name: Build Grafana backend (static 32-bit)
+        run: |
           export GOARCH=386
           export GOOS=linux
           export CGO_ENABLED=1
-          go build -o grafana-6.7.6-linux-386 ./pkg/cmd/grafana-server
+          go mod download
+          go build -o bin/grafana-server-386 \
+            -ldflags="-extldflags '-static'" \
+            ./pkg/cmd/grafana-server
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '14'
+
+      - name: Install Yarn
+        run: npm install --global yarn
+
+      - name: Build frontend assets
+        run: |
+          yarn install --pure-lockfile
+          yarn build
+
+      - name: Package bundle
+        run: |
+          mkdir -p dist-386
+          cp bin/grafana-server-386 dist-386/
+          cp -r public dist-386/public
+          cp -r conf dist-386/conf
+          tar -czf grafana-6.7.6-linux-386.tar.gz -C dist-386 .
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: grafana-386
-          path: grafana-6.7.6-linux-386
+          name: grafana-6.7.6-linux-386
+          path: grafana-6.7.6-linux-386.tar.gz
 
   release:
     needs: build
@@ -43,11 +67,11 @@ jobs:
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
-          name: grafana-386
+          name: grafana-6.7.6-linux-386
 
       - name: Publish Release
         uses: softprops/action-gh-release@v2
         with:
-          files: grafana-6.7.6-linux-386
+          files: grafana-6.7.6-linux-386.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
