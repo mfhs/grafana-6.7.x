@@ -43,7 +43,8 @@ jobs:
 
       - name: Build frontend assets
         run: |
-          yarn install --pure-lockfile
+          export CYPRESS_INSTALL_BINARY=0
+          yarn install --pure-lockfile --ignore-optional
           yarn build
 
       - name: Package bundle
